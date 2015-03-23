@@ -1,4 +1,7 @@
 require 'pry'
+require 'json'
+
+# TODO - methods for converting game board and game settings to json
 
 class Coordinates
   attr_accessor :x, :y
@@ -27,29 +30,36 @@ class Board
 end
 
 class TicTacToe
-  attr_accessor :board, :human_mark, :computer_mark, :first_move
+  # TODO - keep track of who's turn it is
+  attr_accessor :board, :human_mark, :computer_mark, :turn
 
   def initialize
     self.board = Board.new
   end
 
   def play
+    # prompts for new or saved game
+    # lists saved games
+    # loads selected game
+    # abstract "new game" and "load game" logic
     puts "Welcome to tic-tac-toe \n We'll be using a 3x3 grid to play, the top left corner being 1,1 and the bottom right corner being 3,3"
     puts "Would you like to be X's or O's"
     gets.include?("X" || "x") ? @human_mark = "X" : @human_mark = "O"
     puts "Would you like to go first? [Yes][y]"
     input = gets.downcase.strip
-    input.include?("y") ? @first_move = true : @first_move = false
+    input.include?("y") ? @turn = 'human' : @turn = 'computer'
 
-    if @first_move
+    case @turn
+    when 'human'
       puts "Human goes first"
       until game_over?
         puts "Where would you like to go? Please enter your move in the form of a 2-digit coordinate, ex: 1,1"
         human_takes_turn
+        binding.pry
         break if game_over?
         computer_takes_turn
       end
-    else
+    when 'computer'
       puts "Computer goes first"
       until game_over?
         computer_takes_turn
@@ -90,18 +100,7 @@ class TicTacToe
 
   def game_over?
     switch = false
-    lines = []
-    # The across lines
-    @board.array.each do |array|
-      lines << array
-    end
-    # The lines down
-    lines << @board.array.flatten.values_at(0,3,6)
-    lines << @board.array.flatten.values_at(1,4,7)
-    lines << @board.array.flatten.values_at(2,5,8)
-    # The diagonals
-    lines << @board.array.flatten.values_at(0,4,8)
-    lines << @board.array.flatten.values_at(2,4,6)
+    lines = winning_lines
 
     lines.each do |array|
       if array.all? { |index| index == @human_mark }
@@ -121,6 +120,36 @@ class TicTacToe
       end
     end
     switch
+  end
+
+  def winning_lines
+    @winning_lines ||= build_winning_lines
+  end
+
+  def to_json
+    hash = Hash.new
+    hash[:board] = @board.array
+    hash[:turn] = @turn
+    hash[:human_mark] = @human_mark
+    hash[:computer_mark] = @computer_mark
+    JSON.generate(hash)
+  end
+
+  private
+  def build_winning_lines
+    lines = []
+    # The across lines
+    @board.array.each do |array|
+      lines << array
+    end
+    # The lines down
+    lines << @board.array.flatten.values_at(0,3,6)
+    lines << @board.array.flatten.values_at(1,4,7)
+    lines << @board.array.flatten.values_at(2,5,8)
+    # The diagonals
+    lines << @board.array.flatten.values_at(0,4,8)
+    lines << @board.array.flatten.values_at(2,4,6)
+    @winning_lines = lines
   end
 end
 
