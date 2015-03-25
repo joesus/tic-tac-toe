@@ -1,36 +1,11 @@
 require 'pry'
 require 'json'
-
-# TODO - methods for converting game board and game settings to json
-
-class Coordinates
-  attr_accessor :x, :y
-
-  def initialize(move)
-    @x, @y = move.delete!("\n").split(",").map! { |string| string.to_i - 1 }
-  end
-end
-
-class Board
-  attr_accessor :array
-
-  def initialize
-    @array = Array.new(3) { Array.new(3) { " " } }
-  end
-
-  def print_board
-    @array.each do |nested_array|
-      print "#{nested_array}, \n"
-    end
-  end
-
-  def spot_open?(spot)
-    @array[spot.x][spot.y] == " " ? true : false
-  end
-end
+require 'date'
+require 'fileutils'
+require_relative 'coordinates'
+require_relative 'board'
 
 class TicTacToe
-  # TODO - keep track of who's turn it is
   attr_accessor :board, :human_mark, :computer_mark, :turn
 
   def initialize
@@ -38,47 +13,65 @@ class TicTacToe
   end
 
   def play
-    # prompts for new or saved game
-    # lists saved games
-    # loads selected game
+    puts "Welcome to tic-tac-toe would you like to play a new game or load a saved game?[n][s]"
+    new_or_saved = gets
+    if new_or_saved.downcase.match("s")
+      unless Dir.glob('*.json').empty?
+        load_saved_game
+      else
+        puts "Sorry, there are no saved games"
+        setup_new_game
+      end
+    else
+      setup_new_game
+    end
+    resume_game
+  end
+
+  def setup_new_game
     # abstract "new game" and "load game" logic
     puts "Welcome to tic-tac-toe \n We'll be using a 3x3 grid to play, the top left corner being 1,1 and the bottom right corner being 3,3"
+    puts "Save your game at any time by typing save"
     puts "Would you like to be X's or O's"
-    gets.include?("X" || "x") ? @human_mark = "X" : @human_mark = "O"
+    gets.downcase.include?("x") ? @human_mark = "X" : @computer_mark = "O"
     puts "Would you like to go first? [Yes][y]"
     input = gets.downcase.strip
     input.include?("y") ? @turn = 'human' : @turn = 'computer'
+  end
 
-    case @turn
-    when 'human'
-      puts "Human goes first"
-      until game_over?
+  def resume_game
+    until game_over?
+      case @turn
+      when 'human'
+        puts "Human's turn"
         puts "Where would you like to go? Please enter your move in the form of a 2-digit coordinate, ex: 1,1"
         human_takes_turn
-        binding.pry
         break if game_over?
-        computer_takes_turn
-      end
-    when 'computer'
-      puts "Computer goes first"
-      until game_over?
+        @turn = 'computer'
+      when 'computer'
+        puts "Computer's turn"
         computer_takes_turn
         break if game_over?
         puts "Where would you like to go? Please enter your move in the form of a 2-digit coordinate, ex: 1,1"
-        human_takes_turn
+        @turn = 'human'
       end
     end
   end
 
-  def human_takes_turn(move=Coordinates.new(gets))
+  def human_takes_turn
+    input = gets
+    if input.match(/save/)
+      return save_game
+    else
+      move = Coordinates.new(input)
+    end
+
     return if game_over?
-    move ||= Coordinates.new(gets)
     if @board.spot_open?(move)
       @board.array[move.x][move.y] = @human_mark
     else
       puts("That spot is taken, please enter a different coordinate")
-      new_move = Coordinates.new(gets)
-      human_takes_turn(new_move)
+      human_takes_turn
     end
     puts "Board after your move"
     board.print_board
@@ -101,7 +94,6 @@ class TicTacToe
   def game_over?
     switch = false
     lines = winning_lines
-
     lines.each do |array|
       if array.all? { |index| index == @human_mark }
         switch = true
@@ -122,8 +114,62 @@ class TicTacToe
     switch
   end
 
+  def save_game
+    File.open("#{get_filename}.json", 'w+') { |file| file.write(to_json) }
+    puts "Look forward to seeing you again!"
+    exit
+  end
+
+  def get_filename
+    game_name = nil
+
+    while game_name.nil? do
+      puts "Please enter a name for your saved game. ex: 'my-saved-game'"
+      game_name = gets.chomp
+      if game_exists?(game_name)
+        puts "Would you like to overwrite the existing game - #{game_name} ? [y][n] Warning: this is irreversible."
+        if !gets.downcase.match("y")
+          game_name = nil
+        end
+      end
+    end
+    game_name
+  end
+
+  def game_exists?(game_name)
+    !Dir.glob("#{game_name}.json").empty?
+  end
+
+  def load_saved_game
+    puts "Please select from the list of saved games"
+    Dir.glob('*.json').each_with_index do |game, index|
+      puts "[#{index}] #{game}"
+    end
+    selected_game = Dir.glob('*.json')[gets.to_i]
+    puts selected_game
+    binding.pry
+    game_info_json = JSON.parse(IO.read(selected_game))
+    @board =          Board.new(game_info_json["board"])
+    @computer_mark =  game_info_json["computer_mark"]
+    @human_mark =     game_info_json["human_mark"]
+    @turn =           game_info_json["turn"]
+  end
+
+  private
   def winning_lines
-    @winning_lines ||= build_winning_lines
+    lines = []
+    # The across lines
+    @board.array.each do |array|
+      lines << array
+    end
+    # The lines down
+    lines << [@board.array[0][0], @board.array[1][0], @board.array[2][0]]
+    lines << [@board.array[0][1], @board.array[1][1], @board.array[2][1]]
+    lines << [@board.array[0][2], @board.array[1][2], @board.array[2][2]]
+    # The diagonals
+    lines << [@board.array[0][0], @board.array[1][1], @board.array[2][2]]
+    lines << [@board.array[0][2], @board.array[1][1], @board.array[2][0]]
+    lines
   end
 
   def to_json
@@ -133,23 +179,6 @@ class TicTacToe
     hash[:human_mark] = @human_mark
     hash[:computer_mark] = @computer_mark
     JSON.generate(hash)
-  end
-
-  private
-  def build_winning_lines
-    lines = []
-    # The across lines
-    @board.array.each do |array|
-      lines << array
-    end
-    # The lines down
-    lines << @board.array.flatten.values_at(0,3,6)
-    lines << @board.array.flatten.values_at(1,4,7)
-    lines << @board.array.flatten.values_at(2,5,8)
-    # The diagonals
-    lines << @board.array.flatten.values_at(0,4,8)
-    lines << @board.array.flatten.values_at(2,4,6)
-    @winning_lines = lines
   end
 end
 
