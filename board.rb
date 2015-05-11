@@ -43,6 +43,12 @@ class Board
     </td>
   </tr>
 </table>
+
+</br>
+
+<a href=\"/tic_tac_toe/\">
+  <button>Reset</button>
+</a>
 "
   end
 
