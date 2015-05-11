@@ -1,4 +1,4 @@
-require 'pry'
+require 'pry-nav'
 require 'json'
 require 'date'
 require 'fileutils'
@@ -6,7 +6,7 @@ require_relative 'coordinates'
 require_relative 'board'
 
 class TicTacToe
-  attr_accessor :board, :human_mark, :computer_mark, :turn
+  attr_accessor :board, :human_mark, :computer_mark, :turn, :message
 
   def initialize
     self.board = Board.new
@@ -29,7 +29,8 @@ class TicTacToe
   end
 
   def setup_new_game
-    # abstract "new game" and "load game" logic
+    # Reads URL input
+    binding.pry
     puts "Welcome to tic-tac-toe \n We'll be using a 3x3 grid to play, the top left corner being 1,1 and the bottom right corner being 3,3"
     puts "Save your game at any time by typing save"
     puts "Would you like to be X's or O's"
@@ -74,7 +75,7 @@ class TicTacToe
       human_takes_turn
     end
     puts "Board after your move"
-    board.print_board
+    board.print_board(@message)
   end
 
   def computer_takes_turn
@@ -87,31 +88,31 @@ class TicTacToe
     else
       computer_takes_turn
     end
-    puts "Board after computer's move"
-    board.print_board
+    @message = "Board after computer's move"
+    board.print_board(to_json, @message)
   end
 
   def game_over?
-    switch = false
+    @message = false
     lines = winning_lines
     lines.each do |array|
       if array.all? { |index| index == @human_mark }
-        switch = true
-        puts "Congratulations, you win!"
+        @message = true
+        @message = "Congratulations, you win!"
         break
       elsif array.all? { |index| index == @computer_mark }
-        switch = true
-        puts "Sorry, the machines won, again."
+        @message = true
+        @message = "Sorry, the machines won, again."
         break
       elsif !@board.array.flatten.include?(" ")
-        switch = true
-        puts "When man and machine fight, nobody wins"
+        @message = true
+        @message = "When man and machine fight, nobody wins"
         break
       else
-        switch = false
+        @message = false
       end
     end
-    switch
+    @message
   end
 
   def save_game
@@ -140,19 +141,28 @@ class TicTacToe
     !Dir.glob("#{game_name}.json").empty?
   end
 
-  def load_saved_game
+  def load_saved_game(params=nil)
     puts "Please select from the list of saved games"
     Dir.glob('*.json').each_with_index do |game, index|
       puts "[#{index}] #{game}"
     end
     selected_game = Dir.glob('*.json')[gets.to_i]
     puts selected_game
-    binding.pry
-    game_info_json = JSON.parse(IO.read(selected_game))
+    game_info_json = params || JSON.parse(IO.read(selected_game))
+    load_game(game_info_json)
+  end
+
+  def load_game(game_info_json)
+    game_info_json = parse_game_json(game_info_json)
     @board =          Board.new(game_info_json["board"])
     @computer_mark =  game_info_json["computer_mark"]
     @human_mark =     game_info_json["human_mark"]
     @turn =           game_info_json["turn"]
+  end
+
+  def new_game?(params)
+    game_info = parse_game_json(params)
+    game_info["board"].flatten.all? { |x| x == " " }
   end
 
   private
@@ -178,9 +188,10 @@ class TicTacToe
     hash[:turn] = @turn
     hash[:human_mark] = @human_mark
     hash[:computer_mark] = @computer_mark
-    JSON.generate(hash)
+    { "json" => JSON.generate(hash) }
+  end
+
+  def parse_game_json(game_info_json)
+    JSON.parse(game_info_json["json"])
   end
 end
-
-game = TicTacToe.new
-game.play
