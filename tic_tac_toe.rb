@@ -40,24 +40,24 @@ class TicTacToe
     input.include?("y") ? @turn = 'human' : @turn = 'computer'
   end
 
-  def resume_game
-    until game_over?
-      case @turn
-      when 'human'
-        puts "Human's turn"
-        puts "Where would you like to go? Please enter your move in the form of a 2-digit coordinate, ex: 1,1"
-        human_takes_turn
-        break if game_over?
-        @turn = 'computer'
-      when 'computer'
-        puts "Computer's turn"
-        computer_takes_turn
-        break if game_over?
-        puts "Where would you like to go? Please enter your move in the form of a 2-digit coordinate, ex: 1,1"
-        @turn = 'human'
-      end
-    end
-  end
+  # def resume_game
+  #   until game_over?
+  #     case @turn
+  #     when 'human'
+  #       puts "Human's turn"
+  #       puts "Where would you like to go? Please enter your move in the form of a 2-digit coordinate, ex: 1,1"
+  #       human_takes_turn
+  #       break if game_over?
+  #       @turn = 'computer'
+  #     when 'computer'
+  #       puts "Computer's turn"
+  #       computer_takes_turn
+  #       break if game_over?
+  #       puts "Where would you like to go? Please enter your move in the form of a 2-digit coordinate, ex: 1,1"
+  #       @turn = 'human'
+  #     end
+  #   end
+  # end
 
   def human_takes_turn
     input = gets
@@ -88,6 +88,7 @@ class TicTacToe
     else
       computer_takes_turn
     end
+    return if game_over?
     @message = "Board after computer's move"
     board.print_board(to_json, @message)
   end

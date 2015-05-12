@@ -10,8 +10,7 @@ class GameController
   def load_saved_game
     @game = TicTacToe.new
     @game.load_game(params)
-    @game.computer_takes_turn unless @game.new_game?(params)
-    @game.board.print_board(params, @game.message)
+    @game.computer_takes_turn unless @game.new_game?(params) || @game.game_over?
     @game.board.print_board(params, @game.message)
   end
 end
