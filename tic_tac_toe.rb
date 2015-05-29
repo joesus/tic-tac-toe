@@ -79,7 +79,6 @@ class TicTacToe
   end
 
   def computer_takes_turn
-    return if game_over?
     move = "#{rand(0..2)},#{rand(0..2)}\n"
     move = Coordinates.new(move)
     if @board.spot_open?(move)
@@ -88,32 +87,48 @@ class TicTacToe
     else
       computer_takes_turn
     end
-    return if game_over?
-    @message = "Board after computer's move"
-    board.print_board(to_json, @message)
   end
 
   def game_over?
-    @message = false
+    false unless human_won? || computer_won? || game_tied?
+  end
+
+  def human_won?
     lines = winning_lines
     lines.each do |array|
-      if array.all? { |index| index == @human_mark }
-        @message = true
-        @message = "Congratulations, you win!"
-        break
-      elsif array.all? { |index| index == @computer_mark }
-        @message = true
-        @message = "Sorry, the machines won, again."
-        break
-      elsif !@board.array.flatten.include?(" ")
-        @message = true
-        @message = "When man and machine fight, nobody wins"
-        break
-      else
-        @message = false
-      end
+      return true if array.all? { |index| index == @human_mark }
     end
-    @message
+    false
+  end
+
+  def computer_won?
+    lines = winning_lines
+    lines.each do |array|
+      return true if array.all? { |index| index == @computer_mark }
+    end
+    false
+  end
+
+  def game_tied?
+    !@board.array.flatten.include?(" ")
+  end
+
+  def new_game?
+    @board.array.flatten.all? { |x| x == " " }
+  end
+
+  def set_game_status_message
+    if human_won?
+      @message = "Congratulations, you win!"
+    elsif computer_won?
+      @message = "Sorry, the machines won, again."
+    elsif game_tied?
+      @message = "When man and machine fight, nobody wins"
+    elsif new_game?
+      @message = "Welcome to TicTacToe"
+    else
+      @message = "Board after computer's move"
+    end
   end
 
   def save_game
@@ -159,11 +174,6 @@ class TicTacToe
     @computer_mark =  game_info_json["computer_mark"]
     @human_mark =     game_info_json["human_mark"]
     @turn =           game_info_json["turn"]
-  end
-
-  def new_game?(params)
-    game_info = parse_game_json(params)
-    game_info["board"].flatten.all? { |x| x == " " }
   end
 
   private

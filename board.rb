@@ -8,21 +8,48 @@ class Board
   end
 
   def print_board(params, message)
-"<h1>#{message}</h1><table>
+"
+<html>
+<head>
+<style type=\"text/css\">
+#gameBoard {
+  cell-padding: 0px;
+  cell-spacing: 0px;
+}
+#gameBoard td {
+  border: 1px solid black;
+  text-align: center;
+  width: 30px;
+  height: 30px;
+  padding: 0px;
+  spacing: 0px;
+}
+#gameBoard td a{
+  display: none;
+}#gameBoard td:HOVER a{
+  display: inline;
+}
+
+
+</style>
+</head>
+<body>
+<h1>#{message}</h1>
+<table id='gameBoard'>
   <tr>
-    #{generate_link("0,0", params) }
-    #{generate_link("0,1", params)}
-    #{generate_link("0,2", params)}
+    <td>#{generate_link("0,0", params) }</td>
+    <td>#{generate_link("0,1", params)}</td>
+    <td>#{generate_link("0,2", params)}</td>
   </tr>
   <tr>
-    #{generate_link("1,0", params)}
-    #{generate_link("1,1", params) }
-    #{generate_link("1,2", params)}
+    <td>#{generate_link("1,0", params)}</td>
+    <td>#{generate_link("1,1", params) }</td>
+    <td>#{generate_link("1,2", params)}</td>
   </tr>
   <tr>
-    #{generate_link("2,0", params)}
-    #{generate_link("2,1", params)}
-    #{generate_link("2,2", params)}
+    <td>#{generate_link("2,0", params)}</td>
+    <td>#{generate_link("2,1", params)}</td>
+    <td>#{generate_link("2,2", params)}</td>
   </tr>
 </table>
 
@@ -31,6 +58,8 @@ class Board
 <a href=\"/tic_tac_toe/\">
   <button>Reset</button>
 </a>
+</body>
+</html>
 "
   end
 
@@ -54,6 +83,6 @@ class Board
     coordinates = Coordinates.new(coordinates)
     return @array[coordinates.x][coordinates.y] unless spot_open?(coordinates)
     modified_params = modify_params(coordinates, params)
-    "<td><a href=\"/tic_tac_toe/?#{Rack::Utils.build_nested_query(modified_params)}\">X</a></td>"
+    "<a href=\"/tic_tac_toe/?#{Rack::Utils.build_nested_query(modified_params)}\">X</a>"
   end
 end

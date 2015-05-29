@@ -10,6 +10,8 @@ describe Board do
     @top_right = Coordinates.new("0,2")
   end
 
+  subject { @board }
+
   describe "a new board" do
 
     it 'should be three arrays' do
