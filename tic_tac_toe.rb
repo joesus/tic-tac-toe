@@ -12,53 +12,6 @@ class TicTacToe
     self.board = Board.new
   end
 
-  def play
-    puts "Welcome to tic-tac-toe would you like to play a new game or load a saved game?[n][s]"
-    new_or_saved = gets
-    if new_or_saved.downcase.match("s")
-      unless Dir.glob('*.json').empty?
-        load_saved_game
-      else
-        puts "Sorry, there are no saved games"
-        setup_new_game
-      end
-    else
-      setup_new_game
-    end
-    resume_game
-  end
-
-  def setup_new_game
-    # Reads URL input
-    binding.pry
-    puts "Welcome to tic-tac-toe \n We'll be using a 3x3 grid to play, the top left corner being 1,1 and the bottom right corner being 3,3"
-    puts "Save your game at any time by typing save"
-    puts "Would you like to be X's or O's"
-    gets.downcase.include?("x") ? @human_mark = "X" : @computer_mark = "O"
-    puts "Would you like to go first? [Yes][y]"
-    input = gets.downcase.strip
-    input.include?("y") ? @turn = 'human' : @turn = 'computer'
-  end
-
-  # def resume_game
-  #   until game_over?
-  #     case @turn
-  #     when 'human'
-  #       puts "Human's turn"
-  #       puts "Where would you like to go? Please enter your move in the form of a 2-digit coordinate, ex: 1,1"
-  #       human_takes_turn
-  #       break if game_over?
-  #       @turn = 'computer'
-  #     when 'computer'
-  #       puts "Computer's turn"
-  #       computer_takes_turn
-  #       break if game_over?
-  #       puts "Where would you like to go? Please enter your move in the form of a 2-digit coordinate, ex: 1,1"
-  #       @turn = 'human'
-  #     end
-  #   end
-  # end
-
   def human_takes_turn
     input = gets
     if input.match(/save/)
@@ -131,43 +84,6 @@ class TicTacToe
     end
   end
 
-  def save_game
-    File.open("#{get_filename}.json", 'w+') { |file| file.write(to_json) }
-    puts "Look forward to seeing you again!"
-    exit
-  end
-
-  def get_filename
-    game_name = nil
-
-    while game_name.nil? do
-      puts "Please enter a name for your saved game. ex: 'my-saved-game'"
-      game_name = gets.chomp
-      if game_exists?(game_name)
-        puts "Would you like to overwrite the existing game - #{game_name} ? [y][n] Warning: this is irreversible."
-        if !gets.downcase.match("y")
-          game_name = nil
-        end
-      end
-    end
-    game_name
-  end
-
-  def game_exists?(game_name)
-    !Dir.glob("#{game_name}.json").empty?
-  end
-
-  def load_saved_game(params=nil)
-    puts "Please select from the list of saved games"
-    Dir.glob('*.json').each_with_index do |game, index|
-      puts "[#{index}] #{game}"
-    end
-    selected_game = Dir.glob('*.json')[gets.to_i]
-    puts selected_game
-    game_info_json = params || JSON.parse(IO.read(selected_game))
-    load_game(game_info_json)
-  end
-
   def load_game(game_info_json)
     game_info_json = parse_game_json(game_info_json)
     @board =          Board.new(game_info_json["board"])
@@ -177,6 +93,7 @@ class TicTacToe
   end
 
   private
+  
   def winning_lines
     lines = []
     # The across lines
