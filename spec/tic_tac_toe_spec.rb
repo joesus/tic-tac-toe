@@ -4,9 +4,9 @@ require 'rspec/expectations'
 
 describe TicTacToe do
 
-  let(:new_game_params)      { {"json" => "{\"board\":[[\" \", \" \", \" \"], [\" \", \" \", \" \"], [\" \", \" \", \" \"]], \"turn\":\"human\", \"human_mark\":\"X\", \"computer_mark\":\"O\"}"} }
-  let(:human_wins_params)    { {"json" => "{\"board\":[[\"X\", \"X\", \"X\"], [\" \", \" \", \" \"], [\" \", \" \", \" \"]], \"turn\":\"human\", \"human_mark\":\"X\", \"computer_mark\":\"O\"}"} }
-  let(:computer_wins_params) { {"json" => "{\"board\":[[\"O\", \"O\", \"O\"], [\" \", \" \", \" \"], [\" \", \" \", \" \"]], \"turn\":\"human\", \"human_mark\":\"X\", \"computer_mark\":\"O\"}"} }
+  let(:new_game_params)      { {"json" => "{\"board\":[[\" \", \" \", \" \"], [\" \", \" \", \" \"], [\" \", \" \", \" \"]], \"turn\":\"player_one\", \"human_mark\":\"X\", \"computer_mark\":\"O\"}"} }
+  let(:human_wins_params)    { {"json" => "{\"board\":[[\"X\", \"X\", \"X\"], [\" \", \" \", \" \"], [\" \", \" \", \" \"]], \"turn\":\"player_one\", \"human_mark\":\"X\", \"computer_mark\":\"O\"}"} }
+  let(:computer_wins_params) { {"json" => "{\"board\":[[\"O\", \"O\", \"O\"], [\" \", \" \", \" \"], [\" \", \" \", \" \"]], \"turn\":\"player_one\", \"human_mark\":\"X\", \"computer_mark\":\"O\"}"} }
 
   describe 'new_game?' do
     context 'with new game params' do

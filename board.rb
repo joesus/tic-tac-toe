@@ -72,7 +72,7 @@ class Board
     @array.each_with_index do |a,i|
       cloned_array[i] = a.clone
     end
-    cloned_array[coordinate.x][coordinate.y] = "X"
+    cloned_array[coordinate.x][coordinate.y] = "#{set_marker(params)}"
     json_params = JSON.parse(params["json"])
     json_params["board"] = cloned_array
     params["json"] = json_params.to_s.gsub("=>", ":")
@@ -83,6 +83,23 @@ class Board
     coordinates = Coordinates.new(coordinates)
     return @array[coordinates.x][coordinates.y] unless spot_open?(coordinates)
     modified_params = modify_params(coordinates, params)
-    "<a href=\"/tic_tac_toe/?#{Rack::Utils.build_nested_query(modified_params)}\">X</a>"
+    "<a href=\"/tic_tac_toe/?#{Rack::Utils.build_nested_query(modified_params)}\">#{set_marker(params)}</a>"
+  end
+
+  def modify_player(params)
+    new_params = JSON.parse(params["json"])
+    new_params["turn"] = next_player(params)
+    params["json"] = new_params.to_s.gsub("=>", ":")
+    params
+  end
+
+  def next_player(params)
+    json_params = JSON.parse(params["json"])
+    json_params["turn"] == "player_one" ? json_params["turn"] = "player_two" : json_params["turn"] = "player_one"
+  end
+
+  def set_marker(params)
+    json_params = JSON.parse(params["json"])
+    json_params["turn"] == "player_one" ? "X" : "O"
   end
 end

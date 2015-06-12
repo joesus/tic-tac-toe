@@ -16,9 +16,8 @@ class Router
   end
 
   def setup_routes
+    get '/', 'game_controller#load_saved_game'
     get '/tic_tac_toe/', 'game_controller#load_saved_game'
-    get '/tic_tac_toe/print_board', 'game_controller#print_board'
-    get '/tic_tac_toe/setup', 'game_controller#setup_new_game'
   end
 
   def route(method, path, params)
@@ -42,7 +41,7 @@ class Router
 
   def default_params
     {
-      "json" => "{\"board\":[[\" \", \" \", \" \"], [\" \", \" \", \" \"], [\" \", \" \", \" \"]], \"turn\":\"human\", \"human_mark\":\"X\", \"computer_mark\":\"O\"}"
+      "json" => "{\"board\":[[\" \", \" \", \" \"], [\" \", \" \", \" \"], [\" \", \" \", \" \"]], \"turn\":\"player_one\", \"player_one\":\"X\", \"player_two\":\"O\"}"
     }
   end
 
